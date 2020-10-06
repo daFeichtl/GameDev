@@ -1,0 +1,7 @@
+main: Main
+version: v0.1
+name: GameDev
+description: manages your server
+commands:
+  data:
+    description: edits the PlayerData f.E. custom welcome/exit messages, ranks, colors,...
