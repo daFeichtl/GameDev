@@ -31,15 +31,29 @@ public class PlayerData {
     }
 
     public PlayerData(String playerName) {
+        YamlConfiguration yml=null;
+        PlayerData playerData;
         try{
-            YamlConfiguration yml = new YamlConfiguration();
+            yml = new YamlConfiguration();
             yml.load("players.prop");
-            player = Bukkit.getPlayer(playerName);
-            playerID = player.getUniqueId();
-        } catch (NullPointerException n){
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED+"PlayerData cannot be obtained! (Player does not exist!)");
-        } catch (InvalidConfigurationException | IOException e) {
-            Bukkit.getConsoleSender().sendMessage(ChatColor.YELLOW+"YML file failed to init");
+            Object unknownData = yml.get(Bukkit.getPlayer(playerName).getUniqueId()+"");
+            if (unknownData instanceof PlayerData)
+                playerData = (PlayerData) unknownData;
+            else{
+                Bukkit.getConsoleSender().sendMessage(ChatColor.RED+"ERROR: "+ChatColor.WHITE+"Object in YML file is not instance of PlayerData!");
+                throw new InvalidConfigurationException("Failed to convert Object to PlayerData!");
+            }
+            setAllAttributes(playerData);
+        } catch (InvalidConfigurationException i) {
+            this.player = Bukkit.getPlayer(playerName);
+            this.playerID = this.player.getUniqueId();
+            this.customWelcomeMessage = ChatColor.WHITE+" has joined the server.";
+            this.customExitMessage = ChatColor.WHITE+" has left the server";
+            this.currentRank = Ranks.NEWBIE;
+            this.data = null;
+            yml.set(String.valueOf(playerID), this);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -102,5 +116,13 @@ public class PlayerData {
 
     public String getExitMessage(){
         return currentRank.getPlayerColor()+player.getDisplayName()+" "+customExitMessage;
+    }
+    public void setAllAttributes(PlayerData data){
+        this.data = data.data;
+        this.currentRank = data.currentRank;
+        this.customExitMessage = data.customExitMessage;
+        this.customWelcomeMessage = data.customWelcomeMessage;
+        this.player = data.player;
+        this.playerID = data.playerID;
     }
 }
